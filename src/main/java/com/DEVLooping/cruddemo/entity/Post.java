@@ -15,7 +15,7 @@ public class Post {
     @Column(name = "slug")
     private String slug;
     @Column(name = "status")
-    private String published;
+    private String status;
     @Column(name = "author_id")
     private int author_id;
     @Column(name = "created_at")
@@ -28,7 +28,7 @@ public class Post {
     private String deleted_at;
     @Column(name = "content")
     private String content;
-    
+
     public Post() {
     }
 
@@ -54,14 +54,6 @@ public class Post {
 
     public void setSlug(String slug) {
         this.slug = slug;
-    }
-
-    public String getPublished() {
-        return published;
-    }
-
-    public void setPublished(String published) {
-        this.published = published;
     }
 
     public int getAuthor_id() {
@@ -112,12 +104,12 @@ public class Post {
         this.content = content;
     }
 
-    public Post(int id, String title, String slug, String published, int author_id, String created_at,
-            String updated_at, String published_at, String deleted_at, String content) {
+    public Post(int id, String title, String slug, String status, int author_id, String created_at, String updated_at,
+            String published_at, String deleted_at, String content) {
         this.id = id;
         this.title = title;
         this.slug = slug;
-        this.published = published;
+        this.status = status;
         this.author_id = author_id;
         this.created_at = created_at;
         this.updated_at = updated_at;
@@ -128,10 +120,17 @@ public class Post {
 
     @Override
     public String toString() {
-        return "Post [id=" + id + ", title=" + title + ", slug=" + slug + ", published=" + published + ", author_id="
+        return "Post [id=" + id + ", title=" + title + ", slug=" + slug + ", status=" + status + ", author_id="
                 + author_id + ", created_at=" + created_at + ", updated_at=" + updated_at + ", published_at="
                 + published_at + ", deleted_at=" + deleted_at + ", content=" + content + "]";
     }
-    
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
 }
