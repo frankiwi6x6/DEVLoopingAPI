@@ -1,9 +1,12 @@
 package com.DEVLooping.cruddemo.rest;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.DEVLooping.cruddemo.entity.User;
 import com.DEVLooping.cruddemo.service.UserService;
+
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -43,38 +46,52 @@ public class UserRestController {
     }
 
     @PutMapping("/users/{userId}")
-    public User updateUser(@RequestBody User theUser) {
+    public User updateUser(@PathVariable int userId, @RequestBody User updatedUser) {
+        User existingUser = userService.findById(userId);
+        if (existingUser == null) {
+            throw new UserNotFoundException("User not found with id: " + userId);
+        }
 
-        User dbUser = userService.save(theUser);
+        existingUser.setUsername(updatedUser.getUsername());
+        existingUser.setEmail(updatedUser.getEmail());
+        existingUser.setPassword(updatedUser.getPassword());
+        existingUser.setUserType(updatedUser.getUserType());
 
-        return dbUser;
+        // Guardar el usuario actualizado en la base de datos
+        User savedUser = userService.save(existingUser);
+        return savedUser;
     }
 
     @DeleteMapping("/users/{userId}")
-    public String deleteUser(@PathVariable int userId) {
-        User tempUser = userService.findById(userId);
-
-        if (tempUser == null) {
-            throw new UserNotFoundException("User id not found - " + userId);
-
-        }
-        userService.deleteById(userId);
-        return "Deleted user id - " + userId;
+public User softDeleteUser(@PathVariable int userId) {
+    User existingUser = userService.findById(userId);
+    if (existingUser == null) {
+        throw new UserNotFoundException("User not found with id: " + userId);
     }
+
+    // Actualizar los atributos del usuario para "eliminarlo" de forma lógica
+    existingUser.setDeactivated_at(new Date());
+    existingUser.setStatus("inactive");
+
+    // Guardar el usuario desactivado en la base de datos
+    User updatedUser = userService.save(existingUser);
+    return updatedUser;
+}
+
 
     @RestControllerAdvice
     class UserRestControllerAdvice {
         @ExceptionHandler
         public ResponseEntity<String> handleNotFoundException(UserNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                "{ status : " + HttpStatus.NOT_FOUND.value() + ", message:" + ex.getMessage()+"}");
+                    "{ status : " + HttpStatus.NOT_FOUND.value() + ", message:" + ex.getMessage() + "}");
         }
 
         @ExceptionHandler
         public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    "{ status : " + HttpStatus.INTERNAL_SERVER_ERROR.value() + ", message:" + ex.getMessage()+"}");
+                    "{ status : " + HttpStatus.INTERNAL_SERVER_ERROR.value() + ", message:" + ex.getMessage() + "}");
         }
 
     }
