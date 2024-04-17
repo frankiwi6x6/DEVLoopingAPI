@@ -67,16 +67,19 @@ public class UserRestController {
 
     @RestControllerAdvice
     class UserRestControllerAdvice {
-
         @ExceptionHandler
         public ResponseEntity<String> handleNotFoundException(UserNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                "{ status : " + HttpStatus.NOT_FOUND.value() + ", message:" + ex.getMessage()+"}");
         }
 
         @ExceptionHandler
         public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something went wrong");
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    "{ status : " + HttpStatus.INTERNAL_SERVER_ERROR.value() + ", message:" + ex.getMessage()+"}");
         }
+
     }
 
     class UserNotFoundException extends RuntimeException {
