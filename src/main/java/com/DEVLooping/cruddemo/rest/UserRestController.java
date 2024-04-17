@@ -66,10 +66,10 @@ public class UserRestController {
     }
 
     @RestControllerAdvice
-    class PostRestControllerAdvice {
+    class UserRestControllerAdvice {
 
         @ExceptionHandler
-        public ResponseEntity<String> handleNotFoundException(PostNotFoundException ex) {
+        public ResponseEntity<String> handleNotFoundException(UserNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
 
