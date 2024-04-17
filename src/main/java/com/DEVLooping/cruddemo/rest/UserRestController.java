@@ -31,7 +31,7 @@ public class UserRestController {
     public User findById(@PathVariable int userId) {
         User theUser = userService.findById(userId);
         if (theUser == null) {
-            throw new UserNotFoundException("Post id not found - " + userId);
+            throw new UserNotFoundException("User id not found - " + userId);
         }
         return theUser;
     }
@@ -58,7 +58,7 @@ public class UserRestController {
         User tempUser = userService.findById(userId);
 
         if (tempUser == null) {
-            throw new UserNotFoundException("Post id not found - " + userId);
+            throw new UserNotFoundException("User id not found - " + userId);
 
         }
         userService.deleteById(userId);
