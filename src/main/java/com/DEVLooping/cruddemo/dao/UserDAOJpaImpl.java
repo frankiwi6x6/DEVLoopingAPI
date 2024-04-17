@@ -30,7 +30,6 @@ public class UserDAOJpaImpl implements UserDAO {
         // ejecutar la consulta y obtener resultados
         List<User> users = theQuery.getResultList();
 
-        // retornar resultados
 
         return users;
     }

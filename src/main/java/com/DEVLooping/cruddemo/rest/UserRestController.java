@@ -1,12 +1,9 @@
 package com.DEVLooping.cruddemo.rest;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import com.DEVLooping.cruddemo.entity.User;
 import com.DEVLooping.cruddemo.service.UserService;
-
 import java.util.List;
 
 @RestController
@@ -36,7 +33,7 @@ public class UserRestController {
         return theUser;
     }
 
-    @PostMapping("/user")
+    @PostMapping("/users")
     public User addUser(@RequestBody User theUser) {
         theUser.setId(0);
 
