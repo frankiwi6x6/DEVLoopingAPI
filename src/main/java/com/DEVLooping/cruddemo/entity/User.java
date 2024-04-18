@@ -22,11 +22,14 @@ public class User {
 
     @Column(name = "created_at")
     private Date created_at;
+
     @Column(name = "status")
     private String status;
     
     @Column(name = "deactivated_at")
     private Date deactivated_at;
+
+    // Getters y setters
 
     public Date getDeactivated_at() {
         return deactivated_at;
@@ -88,6 +91,15 @@ public class User {
         this.userType = userType;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    // constuctores 
     public User() {
     }
 
@@ -100,14 +112,7 @@ public class User {
         this.userType = userType;
     }
 
-    public String getStatus() {
-        return status;
-    }
+  
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    // Getters y setters
 
 }

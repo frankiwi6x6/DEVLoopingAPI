@@ -2,6 +2,7 @@ package com.DEVLooping.cruddemo.service;
 
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+
 import com.DEVLooping.cruddemo.dao.UserTypeDAO;
 import com.DEVLooping.cruddemo.entity.UserType;
 

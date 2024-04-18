@@ -3,6 +3,7 @@ package com.DEVLooping.cruddemo.rest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import com.DEVLooping.cruddemo.entity.User;
 import com.DEVLooping.cruddemo.service.UserService;
 
@@ -10,7 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/users")
 public class UserRestController {
 
     private UserService userService;
@@ -20,14 +21,14 @@ public class UserRestController {
     }
     // exponer "/users" y retornar todos los usuarios
 
-    @GetMapping("/users")
+    @GetMapping("/")
     public List<User> findAll() {
         List<User> theUsers = userService.findAll();
 
         return theUsers;
     }
 
-    @GetMapping("/users/{userId}")
+    @GetMapping("/{userId}")
     public User findById(@PathVariable int userId) {
         User theUser = userService.findById(userId);
         if (theUser == null) {
@@ -36,7 +37,7 @@ public class UserRestController {
         return theUser;
     }
 
-    @PostMapping("/users")
+    @PostMapping("/")
     public User addUser(@RequestBody User theUser) {
         theUser.setId(0);
 
@@ -45,7 +46,7 @@ public class UserRestController {
         return dbUser;
     }
 
-    @PutMapping("/users/{userId}")
+    @PutMapping("/{userId}")
     public User updateUser(@PathVariable int userId, @RequestBody User updatedUser) {
         User existingUser = userService.findById(userId);
         if (existingUser == null) {
@@ -62,22 +63,21 @@ public class UserRestController {
         return savedUser;
     }
 
-    @DeleteMapping("/users/{userId}")
-public User softDeleteUser(@PathVariable int userId) {
-    User existingUser = userService.findById(userId);
-    if (existingUser == null) {
-        throw new UserNotFoundException("User not found with id: " + userId);
+    @DeleteMapping("/{userId}")
+    public User softDeleteUser(@PathVariable int userId) {
+        User existingUser = userService.findById(userId);
+        if (existingUser == null) {
+            throw new UserNotFoundException("User not found with id: " + userId);
+        }
+
+        // Actualizar los atributos del usuario para "eliminarlo" de forma lógica
+        existingUser.setDeactivated_at(new Date());
+        existingUser.setStatus("inactive");
+
+        // Guardar el usuario desactivado en la base de datos
+        User updatedUser = userService.save(existingUser);
+        return updatedUser;
     }
-
-    // Actualizar los atributos del usuario para "eliminarlo" de forma lógica
-    existingUser.setDeactivated_at(new Date());
-    existingUser.setStatus("inactive");
-
-    // Guardar el usuario desactivado en la base de datos
-    User updatedUser = userService.save(existingUser);
-    return updatedUser;
-}
-
 
     @RestControllerAdvice
     class UserRestControllerAdvice {
