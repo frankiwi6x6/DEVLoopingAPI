@@ -1,7 +1,9 @@
 package com.DEVLooping.cruddemo.rest;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import com.DEVLooping.cruddemo.entity.User;
@@ -13,6 +15,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/users")
 public class UserRestController {
+
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     private UserService userService;
 
@@ -37,9 +42,13 @@ public class UserRestController {
         return theUser;
     }
 
-    @PostMapping("/")
+    @PostMapping("/register")
     public User addUser(@RequestBody User theUser) {
         theUser.setId(0);
+
+        // Encriptar la contraseña
+        String encryptedPassword = passwordEncoder.encode(theUser.getPassword());
+        theUser.setPassword(encryptedPassword);
 
         User dbUser = userService.save(theUser);
 

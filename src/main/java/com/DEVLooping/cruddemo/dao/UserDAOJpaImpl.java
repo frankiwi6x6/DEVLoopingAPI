@@ -21,6 +21,7 @@ public class UserDAOJpaImpl implements UserDAO {
         entityManager = theEntityManager;
     }
 
+
     @Override
     public List<User> findAll() {
 
@@ -40,6 +41,18 @@ public class UserDAOJpaImpl implements UserDAO {
         User user = entityManager.find(User.class, theId);
         return user;
     }
+
+    @Override
+    public User findByUsername(String theUsername) {
+
+        TypedQuery<User> theQuery = entityManager.createQuery("FROM User WHERE username=:username", User.class);
+        theQuery.setParameter("username", theUsername);
+
+        User user = theQuery.getSingleResult();
+
+        return user;
+    }
+    
 
     @Override
     public User save(User theUser) {
