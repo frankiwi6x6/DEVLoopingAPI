@@ -1,12 +1,18 @@
 package com.DEVLooping.cruddemo.service;
 
-import org.springframework.stereotype.Service;
+import java.util.Base64;
+
 
 public class EncryptService {
     
-    @Service
-    public String encrypt(String password) {
-        Bcrypt
-        return password;
+    public String encrypt(String string) {
+        byte[] encrypt = Base64.getEncoder().encode(string.getBytes());
+        return new String(encrypt);
+    }
+
+    public String decrypt(String string) {
+        byte[] decrypt = Base64.getDecoder().decode(string.getBytes());
+        return new String(decrypt);
     }
 }
+

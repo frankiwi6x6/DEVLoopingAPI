@@ -1,12 +1,11 @@
 package com.DEVLooping.cruddemo.rest;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import com.DEVLooping.cruddemo.entity.User;
+import com.DEVLooping.cruddemo.service.EncryptService;
 import com.DEVLooping.cruddemo.service.UserService;
 
 import java.util.Date;
@@ -16,10 +15,8 @@ import java.util.List;
 @RequestMapping("/api/users")
 public class UserRestController {
 
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
-
     private UserService userService;
+    private EncryptService encryptService = new EncryptService();
 
     public UserRestController(UserService theUserService) {
         userService = theUserService;
@@ -31,6 +28,17 @@ public class UserRestController {
         List<User> theUsers = userService.findAll();
 
         return theUsers;
+    }
+
+    @GetMapping("/login/")
+    public HttpStatus loginUser(@RequestParam String username, @RequestParam String password) {
+        
+        String encryptedPassword = encryptService.encrypt(password);
+        User theUser = userService.loginUser(username, encryptedPassword);
+        if (theUser == null) {
+            return HttpStatus.UNAUTHORIZED;
+        }
+        return HttpStatus.OK;
     }
 
     @GetMapping("/{userId}")
@@ -45,11 +53,10 @@ public class UserRestController {
     @PostMapping("/register")
     public User addUser(@RequestBody User theUser) {
         theUser.setId(0);
-
-        // Encriptar la contraseña
-        String encryptedPassword = passwordEncoder.encode(theUser.getPassword());
+        theUser.setCreated_at(new Date());
+        // Encriptar contraseña utilizando Jasypt
+        String encryptedPassword = encryptService.encrypt(theUser.getPassword());
         theUser.setPassword(encryptedPassword);
-
         User dbUser = userService.save(theUser);
 
         return dbUser;
@@ -88,6 +95,20 @@ public class UserRestController {
         return updatedUser;
     }
 
+    @GetMapping("/desencriptar/{userId}")
+    public User decryptPassword(@PathVariable int userId) {
+        User existingUser = userService.findById(userId);
+        if (existingUser == null) {
+            throw new UserNotFoundException("User not found with id: " + userId);
+        }
+
+        // Desencriptar la contraseña del usuario
+        String decryptedPassword = encryptService.decrypt(existingUser.getPassword());
+        existingUser.setPassword(decryptedPassword);
+
+        return existingUser;
+    }
+    
     @RestControllerAdvice
     class UserRestControllerAdvice {
         @ExceptionHandler

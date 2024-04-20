@@ -53,6 +53,20 @@ public class UserDAOJpaImpl implements UserDAO {
         return user;
     }
     
+    @Override
+    public User loginUser(String theUsername, String thePassword) {
+
+        TypedQuery<User> theQuery = entityManager.createQuery("FROM User WHERE username=:username AND password=:password", User.class);
+        theQuery.setParameter("username", theUsername);
+        theQuery.setParameter("password", thePassword);
+
+        // Validar si el usuario existe
+        List<User> users = theQuery.getResultList();
+        if (users.size() == 0) {
+            return null;
+        }
+        return users.get(0);
+    }
 
     @Override
     public User save(User theUser) {

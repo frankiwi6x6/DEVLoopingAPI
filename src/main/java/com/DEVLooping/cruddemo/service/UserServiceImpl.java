@@ -9,18 +9,23 @@ import com.DEVLooping.cruddemo.entity.User;
 import java.util.List;
 
 @Service
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
     private UserDAO userDAO;
 
-    public UserServiceImpl(UserDAO theUserDAO){
-        userDAO=theUserDAO;
+    public UserServiceImpl(UserDAO theUserDAO) {
+        userDAO = theUserDAO;
 
     }
-    
+
     @Override
     public User findByUsername(String theUsername) {
         return userDAO.findByUsername(theUsername);
+    }
+
+    @Override
+    public User loginUser(String theUsername, String thePassword) {
+        return userDAO.loginUser(theUsername, thePassword);
     }
 
     @Override
@@ -28,10 +33,12 @@ public class UserServiceImpl implements UserService{
         return userDAO.findAll();
     }
 
+
     @Override
     public User findById(int theId) {
         return userDAO.findById(theId);
     }
+
     @Transactional
     @Override
     public User save(User theUserDAO) {
