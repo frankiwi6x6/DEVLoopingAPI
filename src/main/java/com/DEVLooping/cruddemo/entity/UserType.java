@@ -48,6 +48,9 @@ public class UserType {
     
     public UserType() {
     }
+    public UserType(int id) {
+        this.id = id;
+    }
 
     public UserType(int id, String name_type, String desc_type) {
         this.id = id;

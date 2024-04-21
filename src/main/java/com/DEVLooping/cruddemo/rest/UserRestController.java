@@ -4,7 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.DEVLooping.cruddemo.entity.ErrorResponse;
 import com.DEVLooping.cruddemo.entity.User;
+import com.DEVLooping.cruddemo.entity.UserType;
 import com.DEVLooping.cruddemo.service.EncryptService;
 import com.DEVLooping.cruddemo.service.UserService;
 
@@ -32,7 +34,7 @@ public class UserRestController {
 
     @GetMapping("/login/")
     public HttpStatus loginUser(@RequestParam String username, @RequestParam String password) {
-        
+
         String encryptedPassword = encryptService.encrypt(password);
         User theUser = userService.loginUser(username, encryptedPassword);
         if (theUser == null) {
@@ -51,15 +53,41 @@ public class UserRestController {
     }
 
     @PostMapping("/register")
-    public User addUser(@RequestBody User theUser) {
+    public ResponseEntity<?> addUser(@RequestBody User theUser) {
+        if (theUser.getEmail() == null || theUser.getUsername() == null || theUser.getPassword() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                    HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                            "Missing required fields. Please provide email, username, and password."));
+        }
+
+        // Verificar si ya existe un usuario con el mismo nombre de usuario
+        User existingUser = userService.findByUsername(theUser.getUsername());
+        if (existingUser != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                    HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                            "Username already exists. Please provide a different username."));
+        }
+
+        // Inicializar UserType si es null
+        if (theUser.getUserType() == null)
+
+        {
+            theUser.setUserType(new UserType(3)); // Otra forma de inicializarlo podría ser: new UserType(id);
+        }
+
+        // Resto del código para guardar el usuario
         theUser.setId(0);
         theUser.setCreated_at(new Date());
-        // Encriptar contraseña utilizando Jasypt
+        theUser.setStatus("active");
+
+        theUser.getUserType().setId(3);
         String encryptedPassword = encryptService.encrypt(theUser.getPassword());
         theUser.setPassword(encryptedPassword);
         User dbUser = userService.save(theUser);
 
-        return dbUser;
+        return ResponseEntity.ok(dbUser);
     }
 
     @PutMapping("/{userId}")
@@ -108,7 +136,7 @@ public class UserRestController {
 
         return existingUser;
     }
-    
+
     @RestControllerAdvice
     class UserRestControllerAdvice {
         @ExceptionHandler

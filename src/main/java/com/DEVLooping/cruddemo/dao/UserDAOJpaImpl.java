@@ -1,6 +1,7 @@
 package com.DEVLooping.cruddemo.dao;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
 
@@ -11,77 +12,57 @@ import java.util.List;
 @Repository
 public class UserDAOJpaImpl implements UserDAO {
 
-    // definir campo para entityManager
-
     private EntityManager entityManager;
-
-    // asignar inyeccion de constructor
 
     public UserDAOJpaImpl(EntityManager theEntityManager) {
         entityManager = theEntityManager;
     }
 
-
     @Override
     public List<User> findAll() {
-
-        // crear una consulta
         TypedQuery<User> theQuery = entityManager.createQuery("FROM User", User.class);
-
-        // ejecutar la consulta y obtener resultados
-        List<User> users = theQuery.getResultList();
-
-
-        return users;
+        return theQuery.getResultList();
     }
 
     @Override
     public User findById(int theId) {
-
-        User user = entityManager.find(User.class, theId);
-        return user;
+        return entityManager.find(User.class, theId);
     }
 
     @Override
     public User findByUsername(String theUsername) {
-
         TypedQuery<User> theQuery = entityManager.createQuery("FROM User WHERE username=:username", User.class);
         theQuery.setParameter("username", theUsername);
 
-        User user = theQuery.getSingleResult();
-
-        return user;
+        try {
+            return theQuery.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
     }
-    
+
     @Override
     public User loginUser(String theUsername, String thePassword) {
-
-        TypedQuery<User> theQuery = entityManager.createQuery("FROM User WHERE username=:username AND password=:password", User.class);
+        TypedQuery<User> theQuery = entityManager
+                .createQuery("FROM User WHERE username=:username AND password=:password", User.class);
         theQuery.setParameter("username", theUsername);
         theQuery.setParameter("password", thePassword);
 
-        // Validar si el usuario existe
-        List<User> users = theQuery.getResultList();
-        if (users.size() == 0) {
+        try {
+            return theQuery.getSingleResult();
+        } catch (NoResultException e) {
             return null;
         }
-        return users.get(0);
     }
 
     @Override
     public User save(User theUser) {
-
-        User dbUser = entityManager.merge(theUser);
-
-        return dbUser;
+        return entityManager.merge(theUser);
     }
 
     @Override
     public void deleteById(int theId) {
-
         User dbUser = entityManager.find(User.class, theId);
-
         entityManager.remove(dbUser);
-
     }
 }
