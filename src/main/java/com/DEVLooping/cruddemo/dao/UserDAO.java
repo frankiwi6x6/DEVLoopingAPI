@@ -12,7 +12,9 @@ public interface UserDAO {
 
     User findByUsername(String theUsername);
 
-    User loginUser(String theUsername, String thePassword);
+    User findByEmail(String theEmail);
+
+    User loginUser(String theEmail, String thePassword);
 
     User save(User theUser);
 

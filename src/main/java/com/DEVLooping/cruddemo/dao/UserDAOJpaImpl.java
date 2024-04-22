@@ -6,13 +6,13 @@ import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
 
 import com.DEVLooping.cruddemo.entity.User;
-
 import java.util.List;
 
 @Repository
 public class UserDAOJpaImpl implements UserDAO {
 
     private EntityManager entityManager;
+
 
     public UserDAOJpaImpl(EntityManager theEntityManager) {
         entityManager = theEntityManager;
@@ -42,10 +42,23 @@ public class UserDAOJpaImpl implements UserDAO {
     }
 
     @Override
-    public User loginUser(String theUsername, String thePassword) {
+    public User findByEmail(String theEmail) {
+        TypedQuery<User> theQuery = entityManager.createQuery("FROM User WHERE email=:email", User.class);
+        theQuery.setParameter("email", theEmail);
+
+        try {
+            return theQuery.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public User loginUser(String theEmail, String thePassword) {
+        // Encriptar la contraseña antes de compararla con la base de datos
         TypedQuery<User> theQuery = entityManager
-                .createQuery("FROM User WHERE username=:username AND password=:password", User.class);
-        theQuery.setParameter("username", theUsername);
+                .createQuery("FROM User WHERE email=:email AND password=:password AND status='active'", User.class);
+        theQuery.setParameter("email", theEmail);
         theQuery.setParameter("password", thePassword);
 
         try {

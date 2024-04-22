@@ -10,8 +10,11 @@ import com.DEVLooping.cruddemo.entity.UserType;
 import com.DEVLooping.cruddemo.service.EncryptService;
 import com.DEVLooping.cruddemo.service.UserService;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 
 @RestController
 @RequestMapping("/api/users")
@@ -32,15 +35,38 @@ public class UserRestController {
         return theUsers;
     }
 
-    @GetMapping("/login/")
-    public HttpStatus loginUser(@RequestParam String username, @RequestParam String password) {
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUser(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String password = request.get("password");
+        String hashedPassword = encryptService.encrypt(password);
 
-        String encryptedPassword = encryptService.encrypt(password);
-        User theUser = userService.loginUser(username, encryptedPassword);
+        User theUser = userService.loginUser(email, hashedPassword);
         if (theUser == null) {
-            return HttpStatus.UNAUTHORIZED;
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(),
+                            HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+                            "Invalid email or password. Please try again.",
+                            1));
+        } else if (theUser.getStatus().equals("inactive")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(),
+                            HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+                            "User is inactive. Please contact the administrator.",
+                            2));
+        } else if (theUser.getStatus().equals("banned")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(),
+                            HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+                            "User is banned. Please contact the administrator.",
+                            3));
+
         }
-        return HttpStatus.OK;
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ErrorResponse(HttpStatus.OK.value(),
+                        HttpStatus.OK.getReasonPhrase(),
+                        "User logged in successfully.",
+                        0));
     }
 
     @GetMapping("/{userId}")
@@ -57,29 +83,47 @@ public class UserRestController {
         if (theUser.getEmail() == null || theUser.getUsername() == null || theUser.getPassword() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
-                    HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                            "Missing required fields. Please provide email, username, and password."));
+                            HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                            "Missing required fields. Please provide email, username, and password.",
+                            1));
         }
 
-        // Verificar si ya existe un usuario con el mismo nombre de usuario
-        User existingUser = userService.findByUsername(theUser.getUsername());
-        if (existingUser != null) {
+        // Verificar si ya existe un usuario con el mismo nombre de usuario o correo
+        // electrónico
+        User existingUserByUsername = userService.findByUsername(theUser.getUsername());
+        User existingUserByEmail = userService.findByEmail(theUser.getEmail());
+        if (existingUserByUsername != null && existingUserByEmail != null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
-                    HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                            "Username already exists. Please provide a different username."));
+                            HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                            "Username and email already exist.\nPlease provide different username and email.",
+                            2));
+        } else if (existingUserByUsername != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                            HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                            "Username already exists.\nPlease provide a different username.",
+                            3));
+        } else if (existingUserByEmail != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                            HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                            "Email already exists.\nPlease provide a different email.",
+                            4));
         }
 
         // Inicializar UserType si es null
-        if (theUser.getUserType() == null)
-
-        {
+        if (theUser.getUserType() == null) {
             theUser.setUserType(new UserType(3)); // Otra forma de inicializarlo podría ser: new UserType(id);
         }
 
         // Resto del código para guardar el usuario
         theUser.setId(0);
-        theUser.setCreated_at(new Date());
+        // Inicializamos la hora de creación del usuario con el huso horario de Chile
+        TimeZone tz = TimeZone.getTimeZone("America/Santiago");
+        Calendar cal = Calendar.getInstance(tz);
+        Date date = cal.getTime();
+        theUser.setCreated_at(date);
         theUser.setStatus("active");
 
         theUser.getUserType().setId(3);
